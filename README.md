@@ -1,4 +1,3 @@
-
 # Autorregistro de usuários via Perun no SATOSA
 
 Este repositório reúne a configuração do proxy SATOSA do Core AAI Platform para o **autorregistro de usuários**: no primeiro acesso, o usuário que faz login com sua instituição ganha uma conta no Perun e é levado a pedir entrada na VO exigida pelo serviço.
@@ -102,3 +101,51 @@ A ordem dos plugins em `proxy_conf.yaml` importa:
 | `CUID_ACCESS_TOKEN` | API do cuidapp |
 | `PERUN_API_URL`, `PERUN_API_USER`, `PERUN_API_PASSWORD` | API RPC do Perun |
 | `PERUN_VO_ID` | ID da VO "Account Registry" |
+
+## 4. Configurações no Perun
+
+Estas configurações ficam no banco do Perun, não neste repositório. Se a instância for recriada, elas precisam ser refeitas.
+
+### 4.1 Acesso à API
+
+- **Usuário de API** (`PERUN_API_USER`) com permissão para criar ExtSources, criar membros na VO "Account Registry" e ler/gravar atributos de usuários e de UES. No ambiente local foi usado o usuário `perun`.
+- **URL da API RPC** (`PERUN_API_URL`) terminando em `/ba/rpc/json/`. Sem o `json/`, o Perun responde `400 INVALID_URL`.
+- **Certificado TLS.** Se o certificado do Perun não for de uma CA pública, coloque a CA em `docker/etc/certs/`. O `entrypoint.sh` a adiciona ao bundle de CAs.
+
+### 4.2 Atributos
+
+Crie com `attributesManager/createAttribute` os atributos que ainda não existirem:
+
+| Atributo | Tipo | Uso |
+|---|---|---|
+| `urn:perun:user:attribute-def:def:login-namespace:geant-core-aai-persistent-shadow` | `String` | CUID do usuário. Gravado pelo `accounts`. |
+| `urn:perun:ues:attribute-def:def:iuids` | `ArrayList` | CUID na UES. O `accounts` busca o usuário por ele. Precisa ser **único** (`convertAttributeToUnique`). |
+| `urn:perun:ues:attribute-def:def:affiliation` | `String` | Afiliação (ePSA) vinda do IdP. |
+| `urn:perun:user:attribute-def:def:preferredMail` | `String` | E-mail. Gravado pelo `accounts` e lido pelo `attribute_store`. |
+| `urn:perun:user:attribute-def:core:displayName`, `firstName`, `lastName` | nativos | Lidos pelo `attribute_store`. |
+| `urn:perun:user:attribute-def:virt:groupNames` | virtual | Grupos do usuário, que viram entitlements. |
+| `urn:perun:user:attribute-def:def:userActive:geant-core-aai` | `String` | Opcional. Só é usado com `enable_extensions_activate_user: true`. |
+
+### 4.3 VOs e grupos
+
+- **VO "Account Registry"** (nome curto `registry`). O ID dela vai em `PERUN_VO_ID`. Ela não precisa de formulário, porque o `accounts` cria os membros diretamente com status `VALID`.
+- **VO exigida pelo serviço** (hoje `teste`):
+  - Precisa de um formulário de inscrição no Registrar.
+  - Defina se a aprovação é automática ou manual.
+  - Confira o valor que o `groupNames` retorna para os membros dela. Esse valor vira o entitlement e precisa casar com o requisito do `access-per-vo.yaml`: `teste` → `urn:geant:core-aai.local:group:teste`.
+
+### 4.4 ExtSource
+
+O `accounts` cria a ExtSource automaticamente, com o entityID do IdP como nome. Não é preciso criá-la à mão, mas o mesmo nome precisa aparecer em três lugares:
+
+- na ExtSource criada pelo `accounts`;
+- em `ext_source_name`, no `attribute-store.yaml`;
+- no valor de `sourceIdPEntityID`, no `source-idp-entityid.yaml`.
+
+### 4.5 Registrar (`signup.local`)
+
+- **Confiança mútua entre o SP do Registrar e o SATOSA:**
+  - o SP do Registrar deve confiar no metadata do IdP do SATOSA (`<base_url>/Saml2IDP/proxy.xml`);
+  - o metadata do SP do Registrar deve estar em `metadata/perun-sp-metadata.xml`, no SATOSA.
+- **Mesma identidade criada pelo `accounts`.** O Registrar precisa reconhecer o usuário pela UES criada no primeiro acesso: ExtSource = `sourceIdPEntityID` e login = CUID (`voPersonID`). Se não reconhecer, o Registrar cria um segundo usuário no Perun.
+- **Mapa de atributos do Shibboleth SP.** O `attribute-map.xml` precisa mapear `urn:cesnet:proxyidp:attribute:sourceIdPEntityID`, `voPersonID` e `mail` (`urn:oid:0.9.2342.19200300.100.1.3`).
