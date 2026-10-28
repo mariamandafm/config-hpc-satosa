@@ -1,0 +1,35 @@
+module: satosa.backends.saml2.SAMLBackend
+name: Saml2
+config:
+  entityid_endpoint: true
+  mirror_force_authn: no
+  memorize_idp: no
+  use_memorized_idp_when_force_authn: no
+  send_requester_id: no
+  enable_metadata_reload: no
+  acs_selection_strategy: prefer_matching_host
+
+  #disco_srv: http://thiss:9000/ds/
+  disco_srv: https://ds2.cafeexpresso.rnp.br/WAYF
+  sp_config:
+    name: "Core AAI Platform (local)"
+    description: "SATOSA proxy - ambiente local"
+    key_file: backend.key
+    cert_file: backend.crt
+
+    metadata:
+      remote:
+        - url: https://ds2.cafeexpresso.rnp.br/metadata/ds-metadata.xml
+    entityid: <base_url>/<name>/proxy_saml2_backend.xml
+    accepted_time_diff: 60
+    service:
+      sp:
+        authn_requests_signed: false
+        want_response_signed: true
+        allow_unsolicited: true
+        endpoints:
+          assertion_consumer_service:
+          - [<base_url>/<name>/acs/post, 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST']
+          discovery_response:
+          - [<base_url>/<name>/disco, 'urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol']
+        name_id_format_allow_create: true

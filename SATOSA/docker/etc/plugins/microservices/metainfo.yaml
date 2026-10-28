@@ -1,0 +1,7 @@
+# ANALISE_PLUGINS.md: Único. Coleta metadados de entidade (SAML/OIDC) na
+# requisição e na resposta. metadata_field_names: quais campos de metadata
+# copiar para internal_data.metadata — sem segredo, sem serviço externo.
+module: coreaai_proxy_plugins.satosa.micro_services.metainfo.metainfo.MetaInfoRequester
+name: MetaInfoRequester
+config:
+  - metadata_field_names: ["display_name", "entity_category"]

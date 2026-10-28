@@ -1,0 +1,4 @@
+module: coreaai_proxy_plugins.satosa.micro_services.metainfo.metainfo.MetaInfoIssuer
+name: MetaInfoIssuer
+config:
+  - metadata_field_names: ["display_name", "registration_authority"]

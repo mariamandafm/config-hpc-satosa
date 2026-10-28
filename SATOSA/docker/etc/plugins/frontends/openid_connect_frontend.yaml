@@ -1,0 +1,13 @@
+module: satosa_oidc_frontend.OpenIDConnectFrontend
+name: OIDC
+config:
+  db_uri: "$OIDC_DB_URI"
+  client_db_handler_class_path: "satosa_oidc_frontend.frontend.ClientDB"
+  token_session_encryption_password: "$OIDC_TOKEN_ENCRYPTION_PASSWORD"
+  response_types_supported: ["code"]
+  scopes_supported: ["openid", "profile", "email"]
+  id_token_default_claims:
+    - email
+  enable_registration_endpoint: false
+  enable_introspection_endpoint: true
+  jwt_access_token: true

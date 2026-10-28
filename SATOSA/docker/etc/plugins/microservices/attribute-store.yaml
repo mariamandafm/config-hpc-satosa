@@ -1,0 +1,20 @@
+module: coreaai_proxy_plugins.satosa.micro_services.attribute_store.AttributeStore
+name: AttributeStore
+config:
+  default:
+    look_up_strategy: "api"
+    ext_source_name: "https://idp4.cafeexpresso.rnp.br/idp/shibboleth"
+    #ext_source_name: "https://localhost:8000/Saml2IDP/proxy.xml"
+    api_url: "$PERUN_API_URL"
+    api_auth_user: "$PERUN_API_USER"
+    api_auth_password: "$PERUN_API_PASSWORD"
+    api_timeout: 30
+    attr_internal_cuid: "cuid"
+    search_return_attributes:
+      "urn:perun:user:attribute-def:def:preferredMail": "mail"
+      "urn:perun:user:attribute-def:core:displayName": "displayname"
+      "urn:perun:user:attribute-def:core:firstName": "givenname"
+      "urn:perun:user:attribute-def:core:lastName": "surname"
+      "urn:perun:user:attribute-def:virt:groupNames": "groups"
+    eppn_attr: "mail"
+    error_url: "https://localhost:8000/error?reason=user_not_found"

@@ -1,0 +1,19 @@
+module: satosa.backends.eu_login_connect.EULoginConnectBackend
+name: EULogin
+config:
+  provider_metadata:
+    issuer: "https://<INSERIR_ISSUER_EU_LOGIN>"
+  client:
+    verify_ssl: yes
+    auth_req_params:
+      response_type: code
+      scope: [openid, profile, email]
+    client_metadata:
+      client_id: "<INSERIR_CLIENT_ID_EU_LOGIN>"
+      client_secret: "<INSERIR_CLIENT_SECRET_EU_LOGIN>"
+      token_endpoint_auth_method: client_secret_basic
+      application_type: web
+      redirect_uris: [<base_url>/<name>]
+    pkce:
+      code_challenge_length: 64
+      code_challenge_method: S256

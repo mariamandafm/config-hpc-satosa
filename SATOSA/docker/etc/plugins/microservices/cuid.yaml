@@ -1,0 +1,12 @@
+module: coreaai_proxy_plugins.satosa.micro_services.cuid.CUIDClient
+name: CUID
+config:
+  default:
+    default:
+      access_token: "$CUID_ACCESS_TOKEN"
+      api_endpoint: "http://cuidapp:8080/cuid/"
+      api_req_timeout: 5
+      iuid_attribute: mail
+      cuid_attribute: cuid
+      scope: core.aai.geant.org
+      disabled: false

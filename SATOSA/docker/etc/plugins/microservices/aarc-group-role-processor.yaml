@@ -1,0 +1,13 @@
+# ANALISE_PLUGINS.md: Único, codifica URN AARC-G069. Sem segredo/serviço
+# externo — funcional, mas urn_namespace/from_group_role_attribute/
+# to_group_role_attribute são decisão de política real (namespace da
+# federação), valores abaixo são exemplo, não uma decisão tomada.
+module: coreaai_proxy_plugins.satosa.micro_services.aarc_group_role_processor.AarcGroupRoleProcessor
+name: AarcGroupRoleProcessor
+config:
+  default:
+    default:
+      urn_namespace: "urn:geant:core-aai.local"
+      from_group_role_attribute: "groups"
+      to_group_role_attribute: "entitlements"
+      clear_from_group_role_attribute: false

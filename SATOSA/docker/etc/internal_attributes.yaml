@@ -1,0 +1,72 @@
+attributes:
+  address:
+    openid: [address.street_address]
+    orcid: [address]
+    saml: [postaladdress]
+  displayname:
+    openid: [nickname]
+    orcid: [displayname]
+    github: [login]
+    saml: [displayName]
+  # A claim "sub" do OIDC vem do CUID (CUIDClient grava neste atributo interno, ver
+  # cuid.yaml). Antes ela vinha de edupersontargetedid, que user_id_to_attr sobrescreve
+  # com o subject_id do SATOSA — o NameID do IdP, transiente, diferente a cada login.
+  # No SAML o CUID sai como voPersonID (urn:oid:1.3.6.1.4.1.25178.4.1.6, voPerson v2).
+  cuid:
+    openid: [sub]
+    saml: [voPersonID]
+  edupersontargetedid:
+    facebook: [id]
+    linkedin: [id]
+    orcid: [edupersontargetedid]
+    github: [id]
+    saml: [eduPersonTargetedID]
+  givenname:
+    facebook: [first_name]
+    linkedin: [email-address]
+    orcid: [givenname]
+    openid: [given_name]
+    saml: [givenName]
+  mail:
+    facebook: [email]
+    linkedin: [email-address]
+    orcid: [mail]
+    github: [email]
+    openid: [email]
+    # "mail" tem que vir primeiro: o frontend SAML emite só o primeiro nome da lista.
+    # Com "email" na frente saía o OID PKCS#9 (1.2.840.113549.1.9.1), que o
+    # attribute-map.xml do Shibboleth SP não mapeia — o SP descartava o e-mail.
+    saml: [mail, email, emailAddress]
+  # Sem esta entrada o backend recebe o eduPersonPrincipalName do IdP, mas o descarta
+  # na tradução para atributos internos, e o frontend SAML nunca o libera.
+  eppn:
+    saml: [eduPersonPrincipalName]
+  # Gerado por plugins/microservices/source-idp-entityid.yaml. O valor tem que ser igual
+  # à ExtSource que o CreateAccount grava no Perun (data.auth_info.issuer).
+  # "sourceIdPEntityID" é o nome local; attributemaps/saml_uri.py o traduz para
+  # urn:cesnet:proxyidp:attribute:sourceIdPEntityID (NameFormat uri), o nome que o SP do
+  # Perun espera. Sem esse mapa o frontend SAML descarta o atributo.
+  sourceidpentityid:
+    saml: [sourceIdPEntityID]
+  name:
+    facebook: [name]
+    orcid: [name]
+    github: [name]
+    openid: [name]
+    saml: [cn]
+  surname:
+    facebook: [last_name]
+    linkedin: [lastName]
+    orcid: [surname]
+    openid: [family_name]
+    saml: [sn, surname]
+  is_active:
+    saml: [isActive]
+# user_id_from_attrs removido: o exemplo padrão do SATOSA pede [edupersontargetedid],
+# mas nosso IdP de teste (kristophjunge/test-saml-idp) não libera esse atributo pro
+# usuário de teste (só uid/eduPersonAffiliation/email) — causava
+# "KeyError: 'edupersontargetedid'" em satosa/base.py:_auth_resp_callback_func antes
+# mesmo de chegar no CUIDClient. Não precisamos deste mecanismo: quem constrói nosso
+# identificador real é o CUIDClient (grava em "sub", ver cuid.yaml), não o
+# subject_id nativo do SATOSA. Achado testando o fluxo de login de verdade.
+user_id_to_attr: edupersontargetedid

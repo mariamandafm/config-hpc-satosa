@@ -1,0 +1,54 @@
+BASE: $BASE
+
+COOKIE_STATE_NAME: "SATOSA_STATE"
+CONTEXT_STATE_DELETE: yes
+STATE_ENCRYPTION_KEY: "$STATE_ENCRYPTION_KEY"
+COOKIE_SECURE: yes
+
+cookies_samesite_compat:
+  - ["SATOSA_STATE", "SATOSA_STATE_LEGACY"]
+
+INTERNAL_ATTRIBUTES: "internal_attributes.yaml"
+
+BACKEND_MODULES:
+  - "plugins/backends/saml2_backend.yaml"
+  #- "plugins/backends/eu_login_connect_backend.yaml"
+
+FRONTEND_MODULES:
+  - "plugins/frontends/openid_connect_frontend.yaml"
+  - "plugins/frontends/saml2_frontend.yaml"
+
+MICRO_SERVICES:
+  # Par metainfo: cria internal_data.metadata (nome do SP/IdP), lido pelo
+  # access-per-vo — sem ele: "'InternalData' object has no attribute 'metadata'".
+  # Requester roda na requisição, Issuer na resposta (antes dos demais).
+  - "plugins/microservices/metainfo.yaml"
+  - "plugins/microservices/metainfo-issuer.yaml"
+  - "plugins/microservices/source-idp-entityid.yaml"
+  - "plugins/microservices/cuid.yaml"
+  - "plugins/microservices/accounts.yaml"
+  - "plugins/microservices/attribute-store.yaml"
+  - "plugins/microservices/aarc-group-role-processor.yaml"
+  - "plugins/microservices/access-per-vo.yaml"
+  - "plugins/microservices/healthcheck.yaml"
+
+LOGGING:
+  version: 1
+  formatters:
+    simple:
+      format: "[%(asctime)s] [%(levelname)s] [%(name)s.%(funcName)s] %(message)s"
+  handlers:
+    stdout:
+      class: logging.StreamHandler
+      stream: "ext://sys.stdout"
+      level: DEBUG
+      formatter: simple
+  loggers:
+    satosa:
+      level: DEBUG
+    coreaai_proxy_plugins:
+      level: DEBUG
+  root:
+    level: INFO
+    handlers:
+      - stdout

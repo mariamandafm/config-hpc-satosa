@@ -1,0 +1,30 @@
+module: coreaai_proxy_plugins.satosa.micro_services.accounts.CreateAccount
+name: CreateAccount
+config:
+  - lookup_strategy: rpc_api
+    vo_id: $PERUN_VO_ID
+    # VO "Account Registry" (Perun id 3, via PERUN_VO_ID no .env): só registro de
+    # contas — não dá acesso a nenhum SP; nenhum requisito do access-per-vo usa ele.
+    vo_name: "registry"
+    cuid_external_provision: true
+    attr_internal_groups: "groups"
+    # Nomes internos conforme internal_attributes.yaml (givenname/surname/mail).
+    attr_internal_first_name: "givenname"
+    attr_internal_last_name: "surname"
+    attr_internal_email: "mail"
+    attr_internal_epsa: "eduPersonScopedAffiliation"
+    attr_internal_iuids: "cuid"
+    attr_internal_cuid_preset: "cuid"
+    attr_internal_cuid: "cuid"
+    attr_perun_ues_iuids: "urn:perun:ues:attribute-def:def:iuids"
+    attr_perun_ues_epsa: "urn:perun:ues:attribute-def:def:affiliation"
+    attr_perun_user_pref_email: "urn:perun:user:attribute-def:def:preferredMail"
+    attr_perun_user_cuid: "urn:perun:user:attribute-def:def:login-namespace:geant-core-aai-persistent-shadow"
+    enable_extensions_activate_user: false
+    attr_perun_activate_user: "urn:perun:user:attribute-def:def:userActive:geant-core-aai"
+    activate_user_value: "ActivatedUser"
+    api_base_url: "$PERUN_API_URL"
+    api_auth_user: "$PERUN_API_USER"
+    api_auth_password: "$PERUN_API_PASSWORD"
+    api_timeout: 30
+    error_url: "https://localhost:8000/error?reason=account_creation_failed"

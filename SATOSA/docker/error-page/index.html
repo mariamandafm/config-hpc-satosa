@@ -1,0 +1,134 @@
+<!doctype html>
+<!--
+  Página de erro do proxy. Lê o JSON em base64 que o access_per_vo
+  (ServiceAccessPerVO) acrescenta ao error_url ("<error_url>/<base64>") e mostra a
+  mensagem + links para o registrar de cada VO que dá acesso ao serviço.
+  Sem base64 no caminho, mostra um erro genérico usando ?reason= (formato dos
+  error_url de accounts/attribute-store).
+-->
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Acesso negado</title>
+  <style>
+    :root {
+      --bg: #f5f6fa; --card: #ffffff; --fg: #1d1d2b; --muted: #5c5f73;
+      --accent: #001eff; --accent-fg: #ffffff; --border: #dcdfe8;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #11121a; --card: #1b1c27; --fg: #ececf3; --muted: #a3a6ba;
+        --accent: #5c74ff; --accent-fg: #ffffff; --border: #2c2e3d;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: flex; align-items: center;
+      justify-content: center; padding: 16px; background: var(--bg); color: var(--fg);
+      font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    main {
+      width: 100%; max-width: 560px; background: var(--card);
+      border: 1px solid var(--border); border-radius: 12px; padding: 28px;
+    }
+    h1 { margin: 0 0 8px; font-size: 1.4rem; }
+    p { margin: 0 0 16px; color: var(--muted); }
+    ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+    li {
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+      justify-content: space-between; border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px 14px;
+    }
+    .vo { font-weight: 600; word-break: break-all; }
+    .vo small { display: block; font-weight: 400; color: var(--muted); }
+    a.btn {
+      background: var(--accent); color: var(--accent-fg); text-decoration: none;
+      padding: 8px 14px; border-radius: 6px; font-weight: 600; white-space: nowrap;
+    }
+    code { font-size: .85em; color: var(--muted); word-break: break-all; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1 id="title">Acesso negado</h1>
+    <p id="message"></p>
+    <ul id="groups" hidden></ul>
+    <p id="detail" hidden><code id="detail-code"></code></p>
+  </main>
+  <script>
+    function decodePayload(segment) {
+      try {
+        var b64 = decodeURIComponent(segment).replace(/-/g, "+").replace(/_/g, "/");
+        while (b64.length % 4) b64 += "=";
+        var bytes = Uint8Array.from(atob(b64), function (c) { return c.charCodeAt(0); });
+        return JSON.parse(new TextDecoder("utf-8").decode(bytes));
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function isHttpUrl(value) {
+      try {
+        var u = new URL(value);
+        return u.protocol === "https:" || u.protocol === "http:";
+      } catch (e) {
+        return false;
+      }
+    }
+
+    var reasons = {
+      vo_access_denied: "Você não é membro de um VO autorizado a acessar este serviço.",
+      account_creation_failed: "Não foi possível criar sua conta na plataforma.",
+      user_not_found: "Não foi possível localizar sua conta na plataforma."
+    };
+
+    var segments = location.pathname.split("/").filter(Boolean);
+    var data = segments.length > 1 ? decodePayload(segments[segments.length - 1]) : null;
+    var params = new URLSearchParams(location.search);
+    var reason = params.get("reason") || (segments.length > 1 ? segments[segments.length - 2] : segments[0]);
+
+    var title = document.getElementById("title");
+    var message = document.getElementById("message");
+
+    if (data) {
+      var service = data.service_name || data.service;
+      title.textContent = "Acesso negado" + (service ? " a " + service : "");
+      message.textContent = data.message || reasons.vo_access_denied;
+
+      var groups = (data.groups || []).filter(function (g) { return isHttpUrl(g.redirect_url); });
+      if (groups.length) {
+        var list = document.getElementById("groups");
+        var intro = document.createElement("p");
+        intro.textContent = "Solicite a entrada em um dos VOs abaixo para obter acesso:";
+        list.before(intro);
+        groups.forEach(function (g) {
+          var li = document.createElement("li");
+          var name = document.createElement("span");
+          name.className = "vo";
+          name.textContent = g.req_vo_name || g.req_urn;
+          if (g.req_vo_groups && g.req_vo_groups.length) {
+            var sub = document.createElement("small");
+            sub.textContent = "Grupo: " + g.req_vo_groups.join(":");
+            name.appendChild(sub);
+          }
+          var link = document.createElement("a");
+          link.className = "btn";
+          link.href = g.redirect_url;
+          link.textContent = "Solicitar acesso";
+          li.append(name, link);
+          list.appendChild(li);
+        });
+        list.hidden = false;
+      }
+    } else {
+      title.textContent = "Erro";
+      message.textContent = reasons[reason] || "Ocorreu um erro durante a autenticação.";
+      if (reason) {
+        document.getElementById("detail-code").textContent = "Código: " + reason;
+        document.getElementById("detail").hidden = false;
+      }
+    }
+  </script>
+</body>
+</html>

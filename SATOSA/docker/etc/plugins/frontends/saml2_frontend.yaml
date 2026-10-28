@@ -1,0 +1,61 @@
+# Frontend SAML (IdP-proxy): expõe o SATOSA como IdP para SPs SAML, ao lado do
+# frontend OIDC. Os endpoints são registrados por backend: com o backend "Saml2",
+# o SSO fica em <base_url>/Saml2/sso/{post,redirect} e o metadata em
+# <base_url>/Saml2IDP/proxy.xml (entityid_endpoint).
+module: satosa.frontends.saml2.SAMLFrontend
+name: Saml2IDP
+config:
+  endpoints:
+    single_sign_on_service:
+      'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST': sso/post
+      'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect': sso/redirect
+
+  entityid_endpoint: true
+  enable_metadata_reload: no
+
+  idp_config:
+    organization: {display_name: Core AAI Platform, name: GIdLab / RNP, url: 'https://www.rnp.br'}
+    contact_person:
+    - {contact_type: technical, email_address: 'mailto:technical@example.com', given_name: Technical}
+    - {contact_type: support, email_address: 'mailto:support@example.com', given_name: Support}
+    # Par gerado pelo entrypoint.sh em docker/keys/ (separado do backend.key, que
+    # é o do SP registrado na federação).
+    # Mapa padrão do pysaml2 + urn:cesnet:proxyidp:attribute:sourceIdPEntityID.
+    # Relativo ao diretório de trabalho do gunicorn (/opt/satosa/etc).
+    attribute_map_dir: attributemaps
+    key_file: frontend.key
+    cert_file: frontend.crt
+    metadata:
+      # Metadata dos SPs que podem usar este IdP-proxy. Placeholder vazio por
+      # enquanto — adicionar o XML de cada SP aqui (ou trocar por remote/mdq).
+      local: [metadata/perun-sp-metadata.xml]
+
+    entityid: <base_url>/<name>/proxy.xml
+    accepted_time_diff: 60
+    service:
+      idp:
+        endpoints:
+          single_sign_on_service: []
+        name: "Core AAI Platform (local)"
+        ui_info:
+          display_name:
+            - lang: pt-br
+              text: "Core AAI Platform (local)"
+            - lang: en
+              text: "Core AAI Platform (local)"
+          description:
+            - lang: pt-br
+              text: "SATOSA proxy - ambiente local"
+            - lang: en
+              text: "SATOSA proxy - local environment"
+        name_id_format: ['urn:oasis:names:tc:SAML:2.0:nameid-format:persistent', 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient']
+        policy:
+          default:
+            attribute_restrictions: null
+            fail_on_missing_requested: false
+            lifetime: {minutes: 15}
+            name_form: urn:oasis:names:tc:SAML:2.0:attrname-format:uri
+            sign_response: true
+            sign_assertion: true
+            encrypt_assertion: false
+            encrypted_advice_attributes: false

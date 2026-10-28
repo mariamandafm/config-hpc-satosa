@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+  postgresql:
+    image: postgres:15.2-alpine3.17
+    environment:
+      POSTGRES_PASSWORD: "${OIDC_POSTGRES_PASSWORD:-LOCAL_PASSWORD}"
+      POSTGRES_DB: "satosa_oidc"
+    volumes:
+      - postgresql-volume:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  satosa:
+    build:
+      context: ..
+      dockerfile: SATOSA/Dockerfile
+    volumes:
+      - ./docker/etc:/opt/satosa/etc-src:ro
+      - ./docker/keys:/opt/satosa/keys
+    environment:
+      BASE: "${SATOSA_BASE:-https://localhost:8000}"
+      STATE_ENCRYPTION_KEY: "${STATE_ENCRYPTION_KEY:?defina STATE_ENCRYPTION_KEY no .env}"
+      OIDC_DB_URI: "postgresql://postgres:${OIDC_POSTGRES_PASSWORD:-LOCAL_PASSWORD}@postgresql:5432/satosa_oidc"
+      OIDC_TOKEN_ENCRYPTION_PASSWORD: "${OIDC_TOKEN_ENCRYPTION_PASSWORD:?defina OIDC_TOKEN_ENCRYPTION_PASSWORD no .env}"
+      CUID_ACCESS_TOKEN: "${CUID_ACCESS_TOKEN:?defina CUID_ACCESS_TOKEN no .env}"
+      PERUN_API_URL: "${PERUN_API_URL:-https://perun-api.local/ba/rpc/json/}"
+      PERUN_API_USER: "${PERUN_API_USER:-perun}"
+      PERUN_API_PASSWORD: "${PERUN_API_PASSWORD:?defina PERUN_API_PASSWORD no .env}"
+      PERUN_VO_ID: "${PERUN_VO_ID:-1}"
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    networks:
+      - default
+      - core-aai-net
+
+  error-page:
+    image: nginx:1.27-alpine
+    volumes:
+      - ./docker/error-page/index.html:/usr/share/nginx/html/index.html:ro
+      - ./docker/error-page/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8090:80"
+    networks:
+      - default
+
+volumes:
+  postgresql-volume:
+
+networks:
+  default:
+  core-aai-net:
+    external: true

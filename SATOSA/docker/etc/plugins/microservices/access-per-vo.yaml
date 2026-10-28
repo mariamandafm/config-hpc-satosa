@@ -1,0 +1,21 @@
+module: coreaai_proxy_plugins.satosa.micro_services.access_per_vo.ServiceAccessPerVO
+name: ServiceAccessPerVO
+config:
+  # Página de erro do serviço error-page (docker-compose.yaml); o plugin acrescenta
+  # "/<json em base64>" ao final.
+  error_url: "https://signup.local/fed/registrar/?vo=teste&targetnew=http://localhost:9999/&_err="
+  entitlements_attribute: "entitlements"
+  filter_entitlements: false
+  # SPs liberados sem checagem de VO (só vale para quem NÃO tem requisitos).
+  service_access_requirements_skiplist:
+    # Registrar do Perun: é onde o usuário pede para entrar no VO, então não pode
+    # exigir VO — senão o link "Solicitar acesso" da página de erro volta a negar.
+    - "https://signup.local/sp/shibboleth"
+  service_access_requirements:
+    testclient:
+      - "urn:geant:core-aai.local:group:teste"
+  registrar_url_base: "https://signup.local/fed/registrar/"
+  error_per_service:
+    testclient:
+      message: "Acesso restrito a membros da VO Teste."
+      with_groups: true
