@@ -1,13 +1,20 @@
+# =============================================================================
+# SourceIdPEntityID — ordem 3 em MICRO_SERVICES (proxy_conf.yaml)
+# =============================================================================
+# Função:     expõe o entityID do IdP upstream (data.auth_info.issuer) no
+#             atributo interno sourceidpentityid, que internal_attributes.yaml
+#             libera como "sourceIdPEntityID".
+# Segredos:   nenhum. Serviço externo: nenhum.
+#
+# Limitação:  o template mustache só enxerga atributos, não o issuer — por isso
+#             o valor é fixo por IdP. Cada IdP novo precisa de uma entrada aqui;
+#             IdP sem entrada sai sem sourceIdPEntityID (não há fallback
+#             "default": ele aplicaria o mesmo entityID a todos).
+#
+# Estrutura:  synthetic_attributes.<requester>.<entityID do IdP>.<atributo interno>
+# -----------------------------------------------------------------------------
 module: satosa.micro_services.attribute_generation.AddSyntheticAttributes
 name: SourceIdPEntityID
-# Expõe o entityID do IdP upstream (data.auth_info.issuer) no atributo interno
-# sourceidpentityid, que internal_attributes.yaml libera como "sourceIdPEntityID".
-#
-# Limitação: o template mustache só enxerga atributos, não o issuer — por isso o valor
-# é fixo por IdP. Cada IdP novo precisa de uma entrada aqui; IdP sem entrada sai sem
-# sourceIdPEntityID (não há fallback "default", ele aplicaria o mesmo entityID a todos).
-#
-# Estrutura: synthetic_attributes.<requester>.<entityID do IdP>.<atributo interno>
 config:
   synthetic_attributes:
     default:

@@ -1,5 +1,9 @@
-# ANALISE_PLUGINS.md: Único. Sem config, sem segredo — totalmente funcional.
-# RequestMicroService que expõe GET /healthcheck -> {"status": "ok"}.
+# =============================================================================
+# HealthCheck — ordem 9 em MICRO_SERVICES (proxy_conf.yaml)
+# =============================================================================
+# Função:     RequestMicroService que expõe GET /healthcheck -> {"status": "ok"}.
+# Segredos:   nenhum. Sem configuração.
+# -----------------------------------------------------------------------------
 module: coreaai_proxy_plugins.satosa.micro_services.healthcheck.HealthCheck
 name: HealthCheck
 config: {}

@@ -1,7 +1,14 @@
-# ANALISE_PLUGINS.md: Único. Coleta metadados de entidade (SAML/OIDC) na
-# requisição e na resposta. metadata_field_names: quais campos de metadata
-# copiar para internal_data.metadata — sem segredo, sem serviço externo.
+# =============================================================================
+# MetaInfoRequester — ordem 1 em MICRO_SERVICES (proxy_conf.yaml)
+# =============================================================================
+# Função:     coleta metadados da entidade (SAML/OIDC) na requisição e na
+#             resposta e os grava em internal_data.metadata.
+# Usado por:  access-per-vo (sem o par metainfo ele falha com
+#             "'InternalData' object has no attribute 'metadata'").
+# Segredos:   nenhum. Serviço externo: nenhum.
+# -----------------------------------------------------------------------------
 module: coreaai_proxy_plugins.satosa.micro_services.metainfo.metainfo.MetaInfoRequester
 name: MetaInfoRequester
 config:
+  # Campos de metadata copiados para internal_data.metadata.
   - metadata_field_names: ["display_name", "entity_category"]

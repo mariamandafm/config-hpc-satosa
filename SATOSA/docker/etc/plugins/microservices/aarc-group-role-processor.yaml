@@ -1,7 +1,14 @@
-# ANALISE_PLUGINS.md: Único, codifica URN AARC-G069. Sem segredo/serviço
-# externo — funcional, mas urn_namespace/from_group_role_attribute/
-# to_group_role_attribute são decisão de política real (namespace da
-# federação), valores abaixo são exemplo, não uma decisão tomada.
+# =============================================================================
+# AarcGroupRoleProcessor — ordem 7 em MICRO_SERVICES (proxy_conf.yaml)
+# =============================================================================
+# Função:     converte grupos/papéis em entitlements no formato URN AARC-G069.
+# Usado por:  access-per-vo (lê o atributo "entitlements").
+# Segredos:   nenhum. Serviço externo: nenhum.
+#
+# Atenção:    urn_namespace, from_group_role_attribute e to_group_role_attribute
+#             são decisão de política (namespace da federação). Os valores
+#             abaixo são exemplo, não uma decisão tomada.
+# -----------------------------------------------------------------------------
 module: coreaai_proxy_plugins.satosa.micro_services.aarc_group_role_processor.AarcGroupRoleProcessor
 name: AarcGroupRoleProcessor
 config:

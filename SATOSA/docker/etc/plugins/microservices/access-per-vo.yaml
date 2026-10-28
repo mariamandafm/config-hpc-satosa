@@ -1,20 +1,37 @@
+# =============================================================================
+# ServiceAccessPerVO — ordem 8 em MICRO_SERVICES (proxy_conf.yaml)
+# =============================================================================
+# Função:     libera ou nega acesso a cada SP conforme os entitlements (VO/grupo)
+#             do usuário; quando nega, redireciona para error_url.
+# Depende de: metainfo + metainfo-issuer (internal_data.metadata) e
+#             aarc-group-role-processor (atributo "entitlements").
+# Segredos:   nenhum.
+# -----------------------------------------------------------------------------
 module: coreaai_proxy_plugins.satosa.micro_services.access_per_vo.ServiceAccessPerVO
 name: ServiceAccessPerVO
 config:
-  # Página de erro do serviço error-page (docker-compose.yaml); o plugin acrescenta
-  # "/<json em base64>" ao final.
+  # Página de erro do serviço error-page (docker-compose.yaml); o plugin
+  # acrescenta "/<json em base64>" ao final.
   error_url: "https://signup.local/fed/registrar/?vo=teste&targetnew=http://localhost:9999/&_err="
+  registrar_url_base: "https://signup.local/fed/registrar/"
+
   entitlements_attribute: "entitlements"
   filter_entitlements: false
-  # SPs liberados sem checagem de VO (só vale para quem NÃO tem requisitos).
+
+  # --- SPs liberados sem checagem de VO --------------------------------------
+  # Só vale para SPs que NÃO estão em service_access_requirements.
   service_access_requirements_skiplist:
-    # Registrar do Perun: é onde o usuário pede para entrar no VO, então não pode
-    # exigir VO — senão o link "Solicitar acesso" da página de erro volta a negar.
+    # Registrar do Perun: é onde o usuário pede para entrar no VO, então não
+    # pode exigir VO — senão o link "Solicitar acesso" da página de erro volta
+    # a negar.
     - "https://signup.local/sp/shibboleth"
+
+  # --- Requisitos por SP: <SP> -> entitlements exigidos ----------------------
   service_access_requirements:
     testclient:
       - "urn:geant:core-aai.local:group:teste"
-  registrar_url_base: "https://signup.local/fed/registrar/"
+
+  # --- Mensagem de erro por SP -----------------------------------------------
   error_per_service:
     testclient:
       message: "Acesso restrito a membros da VO Teste."

@@ -1,4 +1,13 @@
+# =============================================================================
+# MetaInfoIssuer — ordem 2 em MICRO_SERVICES (proxy_conf.yaml)
+# =============================================================================
+# Função:     par do MetaInfoRequester; roda na resposta (antes dos demais
+#             microserviços) e preenche internal_data.metadata.
+# Usado por:  access-per-vo.
+# Segredos:   nenhum. Serviço externo: nenhum.
+# -----------------------------------------------------------------------------
 module: coreaai_proxy_plugins.satosa.micro_services.metainfo.metainfo.MetaInfoIssuer
 name: MetaInfoIssuer
 config:
+  # Campos de metadata copiados para internal_data.metadata.
   - metadata_field_names: ["display_name", "registration_authority"]

@@ -1,3 +1,11 @@
+# =============================================================================
+# CUID — ordem 4 em MICRO_SERVICES (proxy_conf.yaml)
+# =============================================================================
+# Função:     obtém o identificador único (CUID) do usuário no serviço cuidapp
+#             a partir de iuid_attribute e grava o resultado em cuid_attribute.
+# Depende de: serviço cuidapp.
+# Segredos:   CUID_ACCESS_TOKEN (.env).
+# -----------------------------------------------------------------------------
 module: coreaai_proxy_plugins.satosa.micro_services.cuid.CUIDClient
 name: CUID
 config:

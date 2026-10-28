@@ -1,15 +1,30 @@
+# =============================================================================
+# AttributeStore — ordem 6 em MICRO_SERVICES (proxy_conf.yaml)
+# =============================================================================
+# Função:     busca o usuário no Perun pelo CUID e preenche os atributos
+#             internos (mail, nome, grupos) conforme search_return_attributes.
+# Depende de: API do Perun; CUID já resolvido (cuid.yaml / accounts.yaml).
+# Segredos:   PERUN_API_USER, PERUN_API_PASSWORD (.env).
+# -----------------------------------------------------------------------------
 module: coreaai_proxy_plugins.satosa.micro_services.attribute_store.AttributeStore
 name: AttributeStore
 config:
   default:
     look_up_strategy: "api"
+
+    # Fonte externa (IdP) do usuário no Perun.
     ext_source_name: "https://idp4.cafeexpresso.rnp.br/idp/shibboleth"
     #ext_source_name: "https://localhost:8000/Saml2IDP/proxy.xml"
+
+    # --- Conexão com a API do Perun ------------------------------------------
     api_url: "$PERUN_API_URL"
     api_auth_user: "$PERUN_API_USER"
     api_auth_password: "$PERUN_API_PASSWORD"
     api_timeout: 30
+
+    # --- Mapeamento de atributos ---------------------------------------------
     attr_internal_cuid: "cuid"
+    # Atributo do Perun -> atributo interno do SATOSA.
     search_return_attributes:
       "urn:perun:user:attribute-def:def:preferredMail": "mail"
       "urn:perun:user:attribute-def:core:displayName": "displayname"
@@ -17,4 +32,5 @@ config:
       "urn:perun:user:attribute-def:core:lastName": "surname"
       "urn:perun:user:attribute-def:virt:groupNames": "groups"
     eppn_attr: "mail"
+
     error_url: "https://localhost:8000/error?reason=user_not_found"
